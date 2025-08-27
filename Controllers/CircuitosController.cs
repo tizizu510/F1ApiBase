@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using F1ApiBase.Models;
 using F1ApiBase.Services.Interfaces;
+using System.Security.Cryptography.X509Certificates;
 
 namespace F1ApiBase.Controllers
 {
@@ -9,8 +10,95 @@ namespace F1ApiBase.Controllers
     [Produces("application/json")]
     public class CircuitosController : ControllerBase
     {
-        // Leer atentamente antes de empezar.
-        // Los servicios de la API ya estan hechos, leerlos atentamente y prestarles atencions para llamarlos en los casos que se necesite.
-        // Aplicar Dependency inyection y manejo de errores
+        private readonly ICircuitoService _circuitoService;
+
+        public CircuitosController(ICircuitoService circuitoService)
+        {
+            _circuitoService = circuitoService;
+        }
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            try
+            {
+                var circuitos = _circuitoService.GetAllCircuitos();
+                return Ok(circuitos); // 200
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message); //400
+            }
+
+        }
+
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            try
+            {
+                var circuitos = _circuitoService.GetCircuitoById(id);
+                if (circuitos == null)
+                {
+                    return NotFound(); // 404
+                }
+                return Ok(circuitos); // 200
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message); //400
+            }
+        }
+
+        [HttpPost()]
+        public IActionResult AddCircuito([FromBody] Circuito circuito)
+        {
+            try
+            {
+                var nuevoCircuito = _circuitoService.AddCircuito(circuito);
+                return Ok(nuevoCircuito);// 200
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateCircuito([FromBody] Circuito circuito)
+        {
+            try
+            {
+                var circuitoActualizado = _circuitoService.UpdateCircuito(circuito);
+                if (!circuitoActualizado)
+                {
+                    return NotFound();// 404
+                }
+                return NoContent();//204
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCircuito(int id)
+        {
+            try
+            {
+                var circuitoEliminado = _circuitoService.DeleteCircuito(id);
+                if (!circuitoEliminado)
+                {
+                    return NotFound();
+                }
+                return NoContent();//204
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
